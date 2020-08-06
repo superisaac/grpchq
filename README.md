@@ -1,15 +1,29 @@
 # grpchq
 Projects and utilities related to gRPC in python
 
-# Install
+# install
 ```shell
 pip install git+https://github.com/superisaac/grpchq.git
 ```
 
-# Examples
+# examples
 ## command line gRPC client
+
 ```shell
-% grpc-cl hello.hello_pb2 Hello.greeting text=joke -c localhost:50055
+# show argument description
+% grpc-cl hello.hello_pb2 Hello.greeting --desc yes
+Method: hello.Hello.greeting
+Arguments:
+  text=:string
+  num=:int64
+  m_type=:enum(ZERO,ONE,TWO)
+  sub_msg.text=:string
+  sub_msg.num=:int32
+  kernel=:string
+  signal=:uint32
+
+# call remote gRPC server
+% grpc-cl hello.hello_pb2 Hello.greeting text=joke sub_msg.num=163 m_type=TWO -c localhost:50055
 Request: GreetingRequest
   text: "joke"
 
