@@ -1,117 +1,131 @@
-from typing import Dict, Any, List, Tuple, Callable
+"""
+A console tool to call gRPC method from command line arguments
+Usage: grpcl <pb2module> <method> args
+"""
+# pylint: disable=missing-function-docstring
+# pylint: disable=too-many-locals
 
+from typing import Dict, Any, List, Tuple, Callable
+import re
 import argparse
 import importlib
 import grpc
 
 from google.protobuf.descriptor import (
     FileDescriptor,
-    ServiceDescriptor,
     MethodDescriptor, FieldDescriptor,
-    Descriptor, EnumDescriptor,
+    Descriptor
 )
 
 SpecType = Tuple[str, str, Callable, Any]
 SpecDict = Dict[str, Tuple[Callable, Any]]
 
+def find_msg_cls(msg: Descriptor) -> Any:
+    file_desc = msg.file
+    modpath = re.sub(r'\.proto$', '_pb2', file_desc.name).replace('/', '.')
+    mod = importlib.import_module(modpath)
+    return getattr(mod, msg.name)
+
 def find_service(
-        pb2: Any, methname: str) -> Tuple[MethodDescriptor, str, str]:
+        pb2: Any, methname: str) -> Tuple[MethodDescriptor, str]:
 
-    fd: FileDescriptor = pb2.DESCRIPTOR
+    file_desc: FileDescriptor = pb2.DESCRIPTOR
     srvname, mname = methname.split('.')
-    md: MethodDescriptor = fd.services_by_name[srvname].methods_by_name[mname]
-    return md, srvname, mname
+    srvd = file_desc.services_by_name[srvname]
+    mdesc: MethodDescriptor = srvd.methods_by_name[mname]
+    return mdesc, srvd
 
-def make_enum(iv: str, args: Dict[str, int]) -> int:
-    return args[iv]
+def make_enum(inputv: str, args: Dict[str, int]) -> int:
+    return args[inputv]
 
-def make_bool(iv: str) -> bool:
-    if iv in ('true', 'True'):
+def make_bool(inputv: str) -> bool:
+    if inputv in ('true', 'True'):
         return True
-    elif iv in ('false', 'False'):
+    if inputv in ('false', 'False'):
         return False
-    else:
-        raise ValueError('not a boolean value')
+    raise ValueError('not a boolean value')
 
-def make_uint(iv: str) -> int:
-    v = int(iv)
-    if v < 0:
+def make_uint(inputv: str) -> int:
+    value = int(inputv)
+    if value < 0:
         raise ValueError('negative argument')
-    return v
+    return value
 
-def make_bytes(iv: str) -> bytes:
-    return bytes(iv, encoding='utf-8')
+def make_bytes(inputv: str) -> bytes:
+    return bytes(inputv, encoding='utf-8')
 
-def field_type_display(fd: FieldDescriptor) -> str:
-    if fd.type == fd.TYPE_ENUM:
+def field_type_display(file_desc: FieldDescriptor) -> str:
+    if file_desc.type == file_desc.TYPE_ENUM:
         return 'enum({})'.format(','.join(
-            v.name for v in fd.enum_type.values))
+            v.name for v in file_desc.enum_type.values))
 
-    for fn in dir(fd):
-        if not fn.startswith('TYPE_'):
+    for func_name in dir(file_desc):
+        if not func_name.startswith('TYPE_'):
             continue
-        if fd.type == getattr(fd, fn):
-            return fn[5:].lower()
+        if file_desc.type == getattr(file_desc, func_name):
+            return func_name[5:].lower()
     return ''
 
 def build_request(msgd: Descriptor, prefix: List[str]) -> List[SpecType]:
     specs: List[Tuple[str, str, Any, Any]] = []
-    for fd in msgd.fields:
-        if fd.type == fd.TYPE_MESSAGE:
+    for file_desc in msgd.fields:
+        if file_desc.type == file_desc.TYPE_MESSAGE:
             specs.extend(
                 build_request(
-                    fd.message_type, prefix + [fd.name]))
+                    file_desc.message_type, prefix + [file_desc.name]))
             continue
 
-        loc = '.'.join(prefix + [fd.name])
-        type_disp = field_type_display(fd)
+        loc = '.'.join(prefix + [file_desc.name])
+        type_display = field_type_display(file_desc)
         args = None
-        if fd.type == fd.TYPE_ENUM:
+        if file_desc.type == file_desc.TYPE_ENUM:
             args = {v.name:v.number
-                    for v in fd.enum_type.values}
-            fn = make_enum
-        elif fd.type == fd.TYPE_BOOL:
-            fn = make_bool
-        elif fd.type == fd.TYPE_STRING:
-            fn = str
-        elif fd.type in (fd.TYPE_FLOAT, fd.TYPE_DOUBLE):
-            fn = float
-        elif fd.type in (fd.TYPE_INT32, fd.TYPE_INT64,
-                         fd.TYPE_SINT32, fd.TYPE_SINT64,
-                         fd.TYPE_SFIXED32, fd.TYPE_SFIXED64):
-            fn = int
-        elif fd.type in (fd.TYPE_UINT32, fd.TYPE_UINT64,
-                         fd.TYPE_FIXED32, fd.TYPE_FIXED64):
-            fn = make_uint
-        elif fd.type == fd.TYPE_BYTES:
-            fn = make_bytes
+                    for v in file_desc.enum_type.values}
+            func = make_enum
+        elif file_desc.type == file_desc.TYPE_BOOL:
+            func = make_bool
+        elif file_desc.type == file_desc.TYPE_STRING:
+            func = str
+        elif file_desc.type in (file_desc.TYPE_FLOAT, file_desc.TYPE_DOUBLE):
+            func = float
+        elif file_desc.type in (
+                file_desc.TYPE_INT32, file_desc.TYPE_INT64,
+                file_desc.TYPE_SINT32, file_desc.TYPE_SINT64,
+                file_desc.TYPE_SFIXED32, file_desc.TYPE_SFIXED64):
+            func = int
+        elif file_desc.type in (
+                file_desc.TYPE_UINT32, file_desc.TYPE_UINT64,
+                file_desc.TYPE_FIXED32, file_desc.TYPE_FIXED64):
+            func = make_uint
+        elif file_desc.type == file_desc.TYPE_BYTES:
+            func = make_bytes
         else:
             raise ValueError(
-                f'invalid fd type {fd.type} of {fd.name}')
-        specs.append((loc, type_disp, fn, args))
+                f'invalid file descriptor type {file_desc.type} of {file_desc.name}')
+        specs.append((loc, type_display, func, args))
     return specs
 
 def validate_request_args(args: List[str], specs: SpecDict) -> Tuple[List[str], str, Any]:
     vargs: List[Tuple[List[str], str, Any]] = []
     for astr in args:
         loc, value = astr.split('=', 1)
-        fn, spec_args = specs[loc]
+        func, spec_args = specs[loc]
         if spec_args is None:
-            newv = fn(value)
+            newv = func(value)
         else:
-            newv = fn(value, spec_args)
+            newv = func(value, spec_args)
         arr = loc.split('.')
         vargs.append((arr[:-1], arr[-1], newv))
     return vargs
 
 def apply_request(req: Any, vargs: List[Tuple[List[str], str, Any]]) -> None:
-    for loc, sname, v in vargs:
+    for loc, sname, value in vargs:
         obj = req
         for gname in loc:
             obj = getattr(obj, gname)
-        setattr(obj, sname, v)
+        setattr(obj, sname, value)
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser(description='command line interface')
     parser.add_argument('module', type=str,
                         help='pb2 module')
@@ -123,10 +137,6 @@ def main():
                         nargs='*',
                         help='request arguments, format is path.to.fields=value')
 
-    parser.add_argument('-g', '--grpc_module',
-                        type=str,
-                        help='the grpc stub module, default is module + "_grpc"')
-    
     parser.add_argument('--desc',
                         type=str,
                         default='',
@@ -136,41 +146,46 @@ def main():
                         type=str,
                         default='localhost:50055',
                         help='the grpc server address to connect')
-    
-    args = parser.parse_args()
 
+    return parser.parse_args()
+
+def main():
+    args = parse_args()
     pb2 = importlib.import_module(args.module)
-    md, srvname, mname = find_service(pb2, args.method)
+    mdesc, srvd = find_service(pb2, args.method)
 
-    req_specs = build_request(md.input_type, [])
+    req_specs = build_request(mdesc.input_type, [])
     req_spec_dicts: SpecDict = {p:(f, v) for p, d, f, v in req_specs}
 
     if args.desc.lower() in ('yes', 'true', '1'):
-        print('Method:', md.full_name)
+        print('Method:', mdesc.full_name)
         print('Arguments:')
-        for p, d, f, v in req_specs:
-            print(' ', f'{p}=:{d}')
+        for loc, type_display, _, _ in req_specs:
+            print(' ', f'{loc}=:{type_display}')
         return
 
     req_args = validate_request_args(args.request, req_spec_dicts)
-    req_cls = getattr(pb2, md.input_type.name)
+
+    req_cls = find_msg_cls(mdesc.input_type)
+    resp_cls = find_msg_cls(mdesc.output_type)
+
     req = req_cls()
     apply_request(req, req_args)
-    print('Request:', md.input_type.name)
+
+    print('Request:', mdesc.input_type.name)
     for line in str(req).split('\n'):
         print(' ', line)
 
-    grpc_mod_name = args.grpc_module or args.module + '_grpc'
-    grpc_mod = importlib.import_module(grpc_mod_name)
-    stub_cls = getattr(grpc_mod, srvname + 'Stub')
-    print('stub', stub_cls)
-
+    # TODO: support secure channel
     channel = grpc.insecure_channel(args.connect)
-    stub = stub_cls(channel)
-    rpc_method = getattr(stub, mname)
-    print('rpc method', rpc_method)
+
+    rpc_method = channel.unary_unary(
+        f'/{srvd.full_name}/{mdesc.name}',
+        request_serializer=req_cls.SerializeToString,
+        response_deserializer=resp_cls.FromString)
+
     resp = rpc_method(req)
-    print('Response:', md.output_type.name)
+    print('Response:', mdesc.output_type.name)
     for line in str(resp).split('\n'):
         print(' ', line)
 

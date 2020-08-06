@@ -11,6 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from hello import resp_pb2 as hello_dot_resp__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -19,8 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x11hello/hello.proto\x12\x05hello\"\xd1\x01\n\x0fGreetingRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0b\n\x03num\x18\x02 \x01(\x03\x12,\n\x06m_type\x18\x03 \x01(\x0e\x32\x1c.hello.GreetingRequest.MType\x12\"\n\x07sub_msg\x18\x04 \x01(\x0b\x32\x11.hello.SubMessage\x12\x10\n\x06kernel\x18\x08 \x01(\tH\x00\x12\x10\n\x06signal\x18\t \x01(\rH\x00\"#\n\x05MType\x12\x08\n\x04ZERO\x10\x00\x12\x07\n\x03ONE\x10\x01\x12\x07\n\x03TWO\x10\x02\x42\x08\n\x06union1\" \n\x10GreetingResponse\x12\x0c\n\x04text\x18\x02 \x01(\t\"\'\n\nSubMessage\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0b\n\x03num\x18\x02 \x01(\x05\x32\x44\n\x05Hello\x12;\n\x08greeting\x12\x16.hello.GreetingRequest\x1a\x17.hello.GreetingResponseb\x06proto3'
-)
+  serialized_pb=b'\n\x11hello/hello.proto\x12\x05hello\x1a\x10hello/resp.proto\"\xd1\x01\n\x0fGreetingRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0b\n\x03num\x18\x02 \x01(\x03\x12,\n\x06m_type\x18\x03 \x01(\x0e\x32\x1c.hello.GreetingRequest.MType\x12\"\n\x07sub_msg\x18\x04 \x01(\x0b\x32\x11.hello.SubMessage\x12\x10\n\x06kernel\x18\x08 \x01(\tH\x00\x12\x10\n\x06signal\x18\t \x01(\rH\x00\"#\n\x05MType\x12\x08\n\x04ZERO\x10\x00\x12\x07\n\x03ONE\x10\x01\x12\x07\n\x03TWO\x10\x02\x42\x08\n\x06union1\"\'\n\nSubMessage\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0b\n\x03num\x18\x02 \x01(\x05\x32\x44\n\x05Hello\x12;\n\x08greeting\x12\x16.hello.GreetingRequest\x1a\x17.hello.GreetingResponseb\x06proto3'
+  ,
+  dependencies=[hello_dot_resp__pb2.DESCRIPTOR,])
 
 
 
@@ -49,8 +51,8 @@ _GREETINGREQUEST_MTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=193,
-  serialized_end=228,
+  serialized_start=211,
+  serialized_end=246,
 )
 _sym_db.RegisterEnumDescriptor(_GREETINGREQUEST_MTYPE)
 
@@ -123,40 +125,8 @@ _GREETINGREQUEST = _descriptor.Descriptor(
       create_key=_descriptor._internal_create_key,
     fields=[]),
   ],
-  serialized_start=29,
-  serialized_end=238,
-)
-
-
-_GREETINGRESPONSE = _descriptor.Descriptor(
-  name='GreetingResponse',
-  full_name='hello.GreetingResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='text', full_name='hello.GreetingResponse.text', index=0,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=240,
-  serialized_end=272,
+  serialized_start=47,
+  serialized_end=256,
 )
 
 
@@ -194,8 +164,8 @@ _SUBMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=274,
-  serialized_end=313,
+  serialized_start=258,
+  serialized_end=297,
 )
 
 _GREETINGREQUEST.fields_by_name['m_type'].enum_type = _GREETINGREQUEST_MTYPE
@@ -208,7 +178,6 @@ _GREETINGREQUEST.oneofs_by_name['union1'].fields.append(
   _GREETINGREQUEST.fields_by_name['signal'])
 _GREETINGREQUEST.fields_by_name['signal'].containing_oneof = _GREETINGREQUEST.oneofs_by_name['union1']
 DESCRIPTOR.message_types_by_name['GreetingRequest'] = _GREETINGREQUEST
-DESCRIPTOR.message_types_by_name['GreetingResponse'] = _GREETINGRESPONSE
 DESCRIPTOR.message_types_by_name['SubMessage'] = _SUBMESSAGE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -218,13 +187,6 @@ GreetingRequest = _reflection.GeneratedProtocolMessageType('GreetingRequest', (_
   # @@protoc_insertion_point(class_scope:hello.GreetingRequest)
   })
 _sym_db.RegisterMessage(GreetingRequest)
-
-GreetingResponse = _reflection.GeneratedProtocolMessageType('GreetingResponse', (_message.Message,), {
-  'DESCRIPTOR' : _GREETINGRESPONSE,
-  '__module__' : 'hello.hello_pb2'
-  # @@protoc_insertion_point(class_scope:hello.GreetingResponse)
-  })
-_sym_db.RegisterMessage(GreetingResponse)
 
 SubMessage = _reflection.GeneratedProtocolMessageType('SubMessage', (_message.Message,), {
   'DESCRIPTOR' : _SUBMESSAGE,
@@ -242,8 +204,8 @@ _HELLO = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=315,
-  serialized_end=383,
+  serialized_start=299,
+  serialized_end=367,
   methods=[
   _descriptor.MethodDescriptor(
     name='greeting',
@@ -251,7 +213,7 @@ _HELLO = _descriptor.ServiceDescriptor(
     index=0,
     containing_service=None,
     input_type=_GREETINGREQUEST,
-    output_type=_GREETINGRESPONSE,
+    output_type=hello_dot_resp__pb2._GREETINGRESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

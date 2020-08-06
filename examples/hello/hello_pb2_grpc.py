@@ -3,6 +3,7 @@
 import grpc
 
 from hello import hello_pb2 as hello_dot_hello__pb2
+from hello import resp_pb2 as hello_dot_resp__pb2
 
 
 class HelloStub(object):
@@ -17,7 +18,7 @@ class HelloStub(object):
         self.greeting = channel.unary_unary(
                 '/hello.Hello/greeting',
                 request_serializer=hello_dot_hello__pb2.GreetingRequest.SerializeToString,
-                response_deserializer=hello_dot_hello__pb2.GreetingResponse.FromString,
+                response_deserializer=hello_dot_resp__pb2.GreetingResponse.FromString,
                 )
 
 
@@ -36,7 +37,7 @@ def add_HelloServicer_to_server(servicer, server):
             'greeting': grpc.unary_unary_rpc_method_handler(
                     servicer.greeting,
                     request_deserializer=hello_dot_hello__pb2.GreetingRequest.FromString,
-                    response_serializer=hello_dot_hello__pb2.GreetingResponse.SerializeToString,
+                    response_serializer=hello_dot_resp__pb2.GreetingResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -61,6 +62,6 @@ class Hello(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/hello.Hello/greeting',
             hello_dot_hello__pb2.GreetingRequest.SerializeToString,
-            hello_dot_hello__pb2.GreetingResponse.FromString,
+            hello_dot_resp__pb2.GreetingResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
