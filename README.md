@@ -9,7 +9,7 @@ pip install git+https://github.com/superisaac/grpchq.git
 # Examples
 ## command line gRPC client
 ```shell
-% grpcl hello.hello_pb2 Hello.greeting text=joke -c localhost:50055
+% grpc-cl hello.hello_pb2 Hello.greeting text=joke -c localhost:50055
 Request: GreetingRequest
   text: "joke"
 

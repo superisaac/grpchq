@@ -6,7 +6,7 @@ import setuptools
 
 setuptools.setup(
     name='grpchq',
-    version='0.0.2',
+    version='0.0.3',
     description='projects and utilities related to gRPC',
     author='zengke',
     author_email='superisaac.ke@gamil.com',
@@ -21,7 +21,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=['examples']),
     entry_points={
         'console_scripts': [
-            'grpcl = grpchqtools.grpcl:main',
+            'grpc-cl = grpchqtools.grpcl:main',
         ],
     },
     classifiers=[
