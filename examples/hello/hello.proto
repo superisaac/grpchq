@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package hello;
+
+service Hello {
+  rpc greeting(GreetingRequest) returns (GreetingResponse);
+}
+
+message GreetingRequest {
+  string text = 1;
+  int64 num = 2;
+  enum MType {
+    ZERO = 0;
+    ONE = 1;
+    TWO = 2;
+  }
+  MType m_type = 3;
+  SubMessage sub_msg = 4;
+  
+  oneof union1 {
+    string kernel = 8;
+    uint32 signal = 9;
+  }
+}
+
+message GreetingResponse {
+  string text = 2;
+}
+
+message SubMessage {
+  string text = 1;
+  int32 num = 2;
+}
