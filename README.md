@@ -11,7 +11,7 @@ pip install git+https://github.com/superisaac/grpchq.git
 
 ```shell
 # show argument description
-% grpc-cl hello.hello_pb2 Hello.greeting --desc yes
+% grpc-call hello.hello_pb2 Hello.greeting --desc yes
 Method: hello.Hello.greeting
 Arguments:
   text=:string
@@ -23,7 +23,7 @@ Arguments:
   signal=:uint32
 
 # call remote gRPC server
-% grpc-cl hello.hello_pb2 Hello.greeting text=joke sub_msg.num=163 m_type=TWO -c localhost:50055
+% grpc-call hello.hello_pb2 Hello.greeting text=joke sub_msg.num=163 m_type=TWO -c localhost:50055
 Request: GreetingRequest
   text: "joke"
 
